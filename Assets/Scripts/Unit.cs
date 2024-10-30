@@ -65,7 +65,7 @@ public class Unit : MonoBehaviour
     IEnumerator attack()
     {
         GameObject targetObject = target.collider.gameObject;
-        Enemy status = targetObject.GetComponent<Enemy>();
+        Enemy2 status = targetObject.GetComponent<Enemy2>();
         HpBar hpBar = targetObject.GetComponentInChildren<HpBar>();
         
 
