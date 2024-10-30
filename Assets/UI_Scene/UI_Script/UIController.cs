@@ -47,7 +47,7 @@ public class UIController : MonoBehaviour
         _closeButtonSettingScreen = root.Q<Button>("Button_Close_2");
 
         _CreditScreen = root.Q<VisualElement>("Credit_Screen");
-        _openButtonCreditScreen = root.Q<Button>("Button_Setting");
+        _openButtonCreditScreen = root.Q<Button>("Button_Credit");
         _closeButtonCreditScreen = root.Q<Button>("Button_Close_3");
 
         // UI 초기 상태 설정
@@ -60,8 +60,8 @@ public class UIController : MonoBehaviour
         _closeButtonCardTree.clicked += CloseCardTree;
 
         _SettingScreen.style.display = DisplayStyle.None;
-        _openButtonCreditScreen.clicked += OpenSetting;
-        _closeButtonCreditScreen.clicked += CloseSetting;
+        _openButtonSettingScreen.clicked += OpenSetting;
+        _closeButtonSettingScreen.clicked += CloseSetting;
 
         _CreditScreen.style.display = DisplayStyle.None;
         _openButtonCreditScreen.clicked += OpenCredit;
