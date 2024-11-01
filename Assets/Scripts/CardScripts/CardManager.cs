@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -20,6 +21,23 @@ public class CardManager : MonoBehaviour
     
     
     List<Item> itemBuffer;
+    Card selectedCard;
+    public bool isCardDrawing;
+    public bool onMyCardArea;
+    
+    void Start()
+    {
+        SetupItemBuffer();
+        DrawManager.onAddCard += AddCard;
+    }
+
+    void Update()
+    {
+        if (isCardDrawing)
+        {
+            CardDrag();
+        }    
+    }
 
     //카드뽑기
     public Item PopItem()
@@ -54,23 +72,12 @@ public class CardManager : MonoBehaviour
             itemBuffer[rand] = temp;
         }
     }
-    
-    
-    void Start()
-    {
-        SetupItemBuffer();
-        DrawManager.onAddCard += AddCard;
-    }
 
     void OnDestroy()
     {
         DrawManager.onAddCard -= AddCard;
     }
-
-    void Update()
-    {
-        
-    }
+    
     
     //카드 추가 함수
     void AddCard(bool check)
@@ -79,7 +86,7 @@ public class CardManager : MonoBehaviour
         var card = cardObject.GetComponent<Card>();
         card.SetUp(PopItem());
         myCards.Add(card);
-        
+        SetOriginOrder();
         CardAlignment();
     }
 
@@ -139,4 +146,94 @@ public class CardManager : MonoBehaviour
         return results;
     }
 
+    public bool TryUnitSpawn()
+    {
+        var card =selectedCard;
+        var spawnPos = Utils.MousePos;
+        var targetCards= myCards;
+        if (UnitSpawnManager.Inst.SpawnUnit(spawnPos, card))
+        {
+            targetCards.Remove(card);
+            card.transform.DOKill();
+            DestroyImmediate(card.gameObject);
+            selectedCard = null;
+            CardAlignment();
+            return true;
+        }
+        else
+        {
+
+            foreach (var nowCard in targetCards)
+            {
+                nowCard.GetComponent<Order>().SetMostFrontOrder(false);
+            }
+            CardAlignment();
+            return false;
+        }
+    }
+    
+    public void SetOriginOrder()
+    {
+        int count=myCards.Count;
+        for (int i = 0; i < count; i++)
+        {
+            var targetCard = myCards[i];
+            targetCard?.GetComponent<Order>().SetOriginOrder(i);
+        }
+    }
+
+    #region MyCard
+
+    public void CardMouseOver(Card card)
+    {
+        selectedCard = card;
+        EnLargeCard(true,card);
+    }
+    public void CardMouseOut(Card card)
+    {
+        EnLargeCard(false,card);
+    }
+    
+    public void CardMouseDown()
+    {
+        isCardDrawing = true;
+    }
+
+    public void CardMouseUp()
+    {
+        isCardDrawing = false;
+        TryUnitSpawn();
+    }
+
+    public void CardDrag()
+    {
+        if (!onMyCardArea)
+        {
+            selectedCard.MoveTransform(new PRS(Utils.MousePos,Utils.QI,selectedCard.orginPRS.scale),false);
+        }
+    }
+
+    public void DetectCardArea()
+    {
+        RaycastHit2D[] hits = Physics2D.RaycastAll(Utils.MousePos,Vector3.forward);
+        int layer = LayerMask.NameToLayer("MyCardArea");
+        onMyCardArea = Array.Exists(hits,x=>x.collider.gameObject.layer==layer);
+        
+    }
+    public void EnLargeCard(bool isLarge, Card card)
+    {
+        if (isLarge)
+        {
+            Vector3 enLargePos = new Vector3(card.orginPRS.pos.x, -3.0f, -10f);
+            card.MoveTransform(new PRS(enLargePos, Utils.QI, Vector3.one*2.5f),false);
+        }
+        else
+        {
+            card.MoveTransform(card.orginPRS,false);
+        }
+        card.GetComponent<Order>().SetMostFrontOrder(isLarge);
+        
+    }
+    
+    #endregion
 }
