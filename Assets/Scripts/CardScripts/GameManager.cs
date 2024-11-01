@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    
-    
-    
     // Start is called before the first frame update
     void Start()
     {
@@ -21,7 +18,7 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        StartCoroutine(DrawManager.Inst.StartDraw());
+        StartCoroutine(DrawManager.Inst.StartDrawCoroutine());
     }
 
     public void InputKey()
